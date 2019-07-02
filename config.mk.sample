@@ -1,0 +1,3 @@
+CFLAGS=-I../binary-search-tree-master
+REL_LDFLAGS=-L../binary-search-tree-master
+DBG_LDFLAGS=-L../binary-search-tree-master/debug
