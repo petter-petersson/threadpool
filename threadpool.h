@@ -48,15 +48,16 @@ typedef struct threadpool_s {
 #define addr_q_not_empty_threadpool(_n) ((void)0, &((_n)->q_not_empty))
 #endif
 
+//ugly tmp macro
 #ifdef DEBUG
-#define THREADPOOL_DISPLAY_TASKS() \
+#define THREADPOOL_DISPLAY_TASKS(_n) \
   do { \
   printf("task list:\n"); \
-  task_t * tmp = head_threadpool(pool); \
+  task_t * tmp = head_threadpool(_n); \
   int task_count = 0; \
   while(tmp != NULL){ \
     task_count++; \
-    printf("task %d\n", tmp); \
+    printf("task %p\n", tmp); \
     tmp = next_task_t(tmp); \
   } \
   printf("task count: %d\n", task_count); \

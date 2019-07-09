@@ -20,7 +20,7 @@ void * threadpool_work(void * arg){
     }
     pthread_mutex_unlock(addr_mutex_threadpool(pool));
 
-    printf("exec task %d from %lld\n", current, pthread_self());
+    printf("exec task %p from %p\n", current, pthread_self());
     (current->method) (current->arg);
     free(current);
   }
@@ -70,9 +70,9 @@ void threadpool_dispatch(threadpool *pool, threadpool_dispatch_fn fn, void * arg
     x_next_task_t(tail_threadpool(pool)) = current_task;
   }
   x_tail_threadpool(pool) = current_task;
-  pthread_mutex_unlock(addr_mutex_threadpool(pool));
-  THREADPOOL_DISPLAY_TASKS();
+  THREADPOOL_DISPLAY_TASKS(pool);
   pthread_cond_signal(addr_q_not_empty_threadpool(pool));
+  pthread_mutex_unlock(addr_mutex_threadpool(pool));
 }
 
 void threadpool_destroy( threadpool * pool){
@@ -86,7 +86,7 @@ void threadpool_destroy( threadpool * pool){
   pthread_mutex_lock(addr_mutex_threadpool(pool));
   tmp = head_threadpool(pool);
   while(tmp != NULL){
-    printf("freeing task %d\n", tmp);
+    printf("freeing task %p\n", tmp);
     next = next_task_t(tmp);
     free(tmp);
     tmp = next;
