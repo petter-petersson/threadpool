@@ -7,7 +7,7 @@ void * threadpool_work(void * arg){
   threadpool * pool = (threadpool *) arg;
   task_t * current;
 
-  while (1) {
+  while(1) {
     pthread_mutex_lock(addr_mutex_threadpool(pool));
     while(head_threadpool(pool)  == NULL){
       pthread_cond_wait(addr_q_not_empty_threadpool(pool), addr_mutex_threadpool(pool));
@@ -35,14 +35,13 @@ threadpool * threadpool_create(int num_threads) {
     fprintf(stderr, "Unable to create threadpool\n");
     return NULL;
   }
-  pool->available_threads = num_threads;
   x_head_threadpool(pool) = NULL;
   x_tail_threadpool(pool) = NULL;
   x_threads_threadpool(pool) = (pthread_t *)malloc(num_threads * sizeof(pthread_t));
   pthread_mutex_init(addr_mutex_threadpool(pool), NULL);
   pthread_cond_init(addr_q_not_empty_threadpool(pool), NULL);
 
-  for(i=0;i < pool->available_threads; i++){
+  for(i=0;i < num_threads; i++){
     if (pthread_create(&(pool->threads[i]), NULL, threadpool_work, pool) != 0) {
       fprintf(stderr, "Failed to create thread\n");
       return NULL;
@@ -97,7 +96,6 @@ void threadpool_destroy( threadpool * pool){
 
   pthread_mutex_destroy(addr_mutex_threadpool(pool));
   pthread_cond_destroy(addr_q_not_empty_threadpool(pool));
-  pool->available_threads = 0; //?
   free(threads_threadpool(pool));
   free(pool);
 }

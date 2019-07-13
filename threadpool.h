@@ -12,7 +12,6 @@ typedef struct task_s {
 
 typedef struct threadpool_s {
 
-  int available_threads;
   pthread_mutex_t mutex;
   pthread_cond_t q_not_empty;
   pthread_t * threads;
@@ -63,7 +62,7 @@ typedef struct threadpool_s {
   printf("task count: %d\n", task_count); \
   } while(0) 
 #else
-#define THREADPOOL_DISPLAY_TASKS() do {} while(0)
+#define THREADPOOL_DISPLAY_TASKS(_n) do {} while(0)
 #endif
 
 typedef void (*threadpool_dispatch_fn) (void *);
