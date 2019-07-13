@@ -22,6 +22,7 @@ void * threadpool_work(void * arg){
 
     printf("exec task %p from %p\n", current, pthread_self());
     (current->method) (current->arg);
+    //todo: on_exec_complete(pthread_t, arg)
     free(current);
   }
 }
@@ -74,19 +75,17 @@ void threadpool_dispatch(threadpool *pool, threadpool_dispatch_fn fn, void * arg
   pthread_mutex_unlock(addr_mutex_threadpool(pool));
 }
 
-void threadpool_destroy( threadpool * pool){
+void threadpool_destroy(threadpool * pool, threadpool_each_task_fn func, void * arg){
   task_t * next;
   task_t * tmp;
-  //Removing trailing tasks
-  //NOTE any arguments must prob. be free'd too so we should
-  //have a public traverse tasks method
-  //FIXME: abort all running threads too?
-  printf("destroying pool. Remaining tasks:\n");
+
   pthread_mutex_lock(addr_mutex_threadpool(pool));
   tmp = head_threadpool(pool);
   while(tmp != NULL){
-    printf("freeing task %p\n", tmp);
     next = next_task_t(tmp);
+    if(func != NULL){
+      (func)(tmp, arg);
+    }
     free(tmp);
     tmp = next;
   }

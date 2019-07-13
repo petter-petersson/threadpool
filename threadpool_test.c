@@ -17,6 +17,12 @@ int task_call_count = 0;
 void check_number_of_active_threads(bst_node_t * node, void * arg){
   thread_count++;
 }
+
+int remaining_tasks = 0;
+void count_remaining_tasks(task_t * task, void * arg){
+  remaining_tasks++;
+}
+
 void do_work(void *arg) {
   int work_usleep = *((int *) arg);
 
@@ -64,7 +70,9 @@ int test_threadpool(test_context_t * tctx){
   for(int i=0; i < 10; i++){
     threadpool_dispatch(pool, do_work, &work_usleep);
   }
-  threadpool_destroy(pool);
+  threadpool_destroy(pool, count_remaining_tasks, NULL);
+  check(remaining_tasks > 0, tctx);
+  printf("remaining tasks when calling destroy: %d\n", remaining_tasks);
   pthread_mutex_destroy(&test_mutex);
   bst_free(test_btree);
   return 0;

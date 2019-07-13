@@ -66,10 +66,11 @@ typedef struct threadpool_s {
 #endif
 
 typedef void (*threadpool_dispatch_fn) (void *);
+typedef void (*threadpool_each_task_fn) (task_t *task, void * arg);
 
 void * threadpool_work(void * arg);
 threadpool * threadpool_create(int num_threads);
-void threadpool_destroy( threadpool * pool);
+void threadpool_destroy(threadpool * pool, threadpool_each_task_fn func, void * arg);
 void threadpool_dispatch(threadpool *pool, threadpool_dispatch_fn fn, void * arg); 
 
 #endif
