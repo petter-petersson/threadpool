@@ -9,8 +9,12 @@ void * threadpool_work(void * arg){
 
   while(1) {
     pthread_mutex_lock(addr_mutex_threadpool(pool));
-    while(head_threadpool(pool)  == NULL){
+    while(head_threadpool(pool)  == NULL && run_flag_threadpool(pool)){
       pthread_cond_wait(addr_q_not_empty_threadpool(pool), addr_mutex_threadpool(pool));
+    }
+    if(!run_flag_threadpool(pool)){
+      pthread_mutex_unlock(addr_mutex_threadpool(pool));
+      break;
     }
     current = head_threadpool(pool);
     x_head_threadpool(pool) = next_task_t(current);
@@ -20,11 +24,14 @@ void * threadpool_work(void * arg){
     }
     pthread_mutex_unlock(addr_mutex_threadpool(pool));
 
+#ifdef DEBUG
     printf("exec task %p from %p\n", current, pthread_self());
+#endif
     (current->method) (current->arg);
     //todo: on_exec_complete(pthread_t, arg)
     free(current);
   }
+  return 0;
 }
 
 threadpool * threadpool_create(int num_threads) {
@@ -36,6 +43,8 @@ threadpool * threadpool_create(int num_threads) {
     fprintf(stderr, "Unable to create threadpool\n");
     return NULL;
   }
+  x_run_flag_threadpool(pool) = 1;
+  x_num_threads_threadpool(pool) = num_threads;
   x_head_threadpool(pool) = NULL;
   x_tail_threadpool(pool) = NULL;
   x_threads_threadpool(pool) = (pthread_t *)malloc(num_threads * sizeof(pthread_t));
@@ -79,8 +88,21 @@ void threadpool_destroy(threadpool * pool, threadpool_each_task_fn func, void * 
   task_t * next;
   task_t * tmp;
 
+  assert(pool != NULL);
+
   pthread_mutex_lock(addr_mutex_threadpool(pool));
   tmp = head_threadpool(pool);
+  x_run_flag_threadpool(pool) = 0;
+
+  pthread_cond_broadcast(addr_q_not_empty_threadpool(pool));
+  x_head_threadpool(pool) = NULL;
+  x_tail_threadpool(pool) = NULL;
+  pthread_mutex_unlock(addr_mutex_threadpool(pool));
+
+  for(int i = 0; i < num_threads_threadpool(pool); i++) {
+    pthread_join(threads_threadpool(pool)[i], NULL);
+  }
+
   while(tmp != NULL){
     next = next_task_t(tmp);
     if(func != NULL){
@@ -89,9 +111,6 @@ void threadpool_destroy(threadpool * pool, threadpool_each_task_fn func, void * 
     free(tmp);
     tmp = next;
   }
-  x_head_threadpool(pool) = NULL;
-  x_tail_threadpool(pool) = NULL;
-  pthread_mutex_unlock(addr_mutex_threadpool(pool));
 
   pthread_mutex_destroy(addr_mutex_threadpool(pool));
   pthread_cond_destroy(addr_q_not_empty_threadpool(pool));

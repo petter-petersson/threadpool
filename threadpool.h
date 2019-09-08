@@ -16,6 +16,9 @@ typedef struct threadpool_s {
   pthread_cond_t q_not_empty;
   pthread_t * threads;
 
+  int num_threads;
+  int run_flag;
+
   task_t *t_head;
   task_t *t_tail;
 
@@ -32,9 +35,13 @@ typedef struct threadpool_s {
 #define x_head_threadpool(_n) (deref_threadpool(_n)->t_head)
 #define x_tail_threadpool(_n) (deref_threadpool(_n)->t_tail)
 #define x_threads_threadpool(_n) (deref_threadpool(_n)->threads)
+#define x_num_threads_threadpool(_n) (deref_threadpool(_n)->num_threads)
+#define x_run_flag_threadpool(_n) (deref_threadpool(_n)->run_flag)
 #define head_threadpool(_n) ((void)0, x_head_threadpool(_n))
 #define tail_threadpool(_n) ((void)0, x_tail_threadpool(_n))
 #define threads_threadpool(_n) ((void)0, x_threads_threadpool(_n))
+#define num_threads_threadpool(_n) ((void)0, x_num_threads_threadpool(_n))
+#define run_flag_threadpool(_n) ((void)0, x_run_flag_threadpool(_n))
 
 #define x_next_task_t(_n) (deref_task_t(_n)->next)
 #define next_task_t(_n) ((void)0, x_next_task_t(_n))
