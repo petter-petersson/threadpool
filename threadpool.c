@@ -24,11 +24,7 @@ void * threadpool_work(void * arg){
     }
     pthread_mutex_unlock(addr_mutex_threadpool(pool));
 
-#ifdef DEBUG
-    printf("exec task %p from %p\n", current, pthread_self());
-#endif
     (current->method) (current->arg);
-    //todo: on_exec_complete(pthread_t, arg)
     free(current);
   }
   return 0;
@@ -79,7 +75,8 @@ void threadpool_dispatch(threadpool *pool, threadpool_dispatch_fn fn, void * arg
     x_next_task_t(tail_threadpool(pool)) = current_task;
   }
   x_tail_threadpool(pool) = current_task;
-  THREADPOOL_DISPLAY_TASKS(pool);
+  
+  //THREADPOOL_DISPLAY_TASKS(pool);
   pthread_cond_signal(addr_q_not_empty_threadpool(pool));
   pthread_mutex_unlock(addr_mutex_threadpool(pool));
 }
