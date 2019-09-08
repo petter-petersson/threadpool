@@ -6,7 +6,7 @@ DEBUG_FLAGS=-g -DDEBUG
 BUILD_DIR=release
 LDFLAGS = $(REL_LDFLAGS)
 
-.PHONY: clean test _test lib debug_lib debug mkdirs
+.PHONY: clean test _test lib debug_lib mkdirs
 
 mkdirs:
 	mkdir -p debug
